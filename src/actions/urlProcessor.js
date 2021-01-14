@@ -50,7 +50,10 @@ const urlProcessor = (search, network) => {
   if (votes.length + unvotes.length === 0) {
     return [];
   }
-  return getAccounts({ network, params: { usernameList: [...votes, ...unvotes] } }).data;
+  return getAccounts({
+    network,
+    params: { usernameList: [...votes, ...unvotes] },
+  }, tokenMap.LSK.key).data;
 };
 
 const setVotesByLaunchProtocol = search =>

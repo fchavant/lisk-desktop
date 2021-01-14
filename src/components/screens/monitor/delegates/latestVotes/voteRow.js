@@ -9,14 +9,14 @@ import styles from '../delegates.css';
 
 const VoteRow = ({
   data, className,
-}) => {
-  /*const votes = data.votes
-    .filter(vote => vote.status === '+')
-    .map(vote => vote.delegate.username);
-  const unVotes = data.votes
-    .filter(vote => vote.status === '-')
-    .map(vote => vote.delegate.username);*/
-  return (
+}) =>
+  // const votes = data.votes
+  //   .filter(vote => vote.status === '+')
+  //   .map(vote => vote.delegate.username);
+  // const unVotes = data.votes
+  //   .filter(vote => vote.status === '-')
+  //   .map(vote => vote.delegate.username);
+  (
     <DialogLink
       className={`${grid.row} ${className} ${styles.voteRow} vote-row`}
       component="transactionDetails"
@@ -63,7 +63,6 @@ const VoteRow = ({
       </span>
     </DialogLink>
   );
-};
 
 /* istanbul ignore next */
 const areEqual = (prevProps, nextProps) => (prevProps.data.id === nextProps.data.id);
