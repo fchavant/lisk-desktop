@@ -57,35 +57,6 @@ pipeline {
 				echo 'pass'
 			}
 		}
-		stage('lisk-service') {
-			steps {
-				dir('lisk-service') {
-					checkout([$class: 'GitSCM',
-						  branches: [[name: "${params.LISK_SERVICE_VERSION}" ]],
-						  userRemoteConfigs: [[url: 'https://github.com/LiskHQ/lisk-service']]])
-					sh '''
-					make build-core
-					make build-gateway
-					make build-template
-					make build-tests
-					'''
-					dir('docker') {
-						sh '''
-						ENABLE_HTTP_API='http-version1,http-version1-compat,http-status,http-test' \
-						ENABLE_WS_API='rpc,rpc-v1,blockchain,rpc-test' \
-						make -f Makefile.jenkins up
-						'''
-					}
-				}
-			}
-			post {
-				always {
-					dir('lisk-service/docker') {
-						sh 'make -f Makefile.jenkins mrproper'
-					}
-				}
-			}
-		}
 		stage('Run tests') {
 			environment {
 				LISK_CORE_IMAGE_VERSION = "${params.LISK_CORE_IMAGE_VERSION}"
@@ -169,6 +140,24 @@ EOF
 							}
 						}
 						}
+						dir('lisk-service') {
+							checkout([$class: 'GitSCM',
+								  branches: [[name: "${params.LISK_SERVICE_VERSION}" ]],
+								  userRemoteConfigs: [[url: 'https://github.com/LiskHQ/lisk-service']]])
+							sh '''
+							make build-core
+							make build-gateway
+							make build-template
+							make build-tests
+							'''
+							dir('docker') {
+								sh '''
+								ENABLE_HTTP_API='http-version1,http-version1-compat,http-status,http-test' \
+								ENABLE_WS_API='rpc,rpc-v1,blockchain,rpc-test' \
+								make -f Makefile.jenkins up
+								'''
+							}
+						}
 					},
 					"percy": {
 						script {
@@ -219,6 +208,7 @@ EOF
 		}
 		cleanup {
 			ansiColor('xterm') {
+				sh '( cd $WORKSPACE/lisk-service/docker && make -f Makefile.jenkins mrproper || tue ) || true'
 				sh '( cd $WORKSPACE/$BRANCH_NAME && docker-compose logs && make mrproper || true ) || true'
 			}
 			cleanWs()
