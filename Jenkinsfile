@@ -10,6 +10,7 @@ pipeline {
 		booleanParam(name: 'SKIP_PERCY', defaultValue: false, description: 'Skip running percy.')
 		string(name: 'LISK_CORE_VERSION', defaultValue: 'release/3.0.0-beta.1', description: 'Use lisk-core branch.', )
 		string(name: 'LISK_CORE_IMAGE_VERSION', defaultValue: '3.0.0-beta.1-a7842d112d5136d9462501763c4cb2895096e900', description: 'Use lisk-core docker image.', )
+		string(name: 'LISK_SERVICE_VERSION', defaultValue: 'development', description: 'Use lisk-service branch.', )
 	}
 	stages {
 		stage('Install npm dependencies') {
@@ -63,6 +64,33 @@ pipeline {
 						     status: 'SUCCESS',
 						     targetUrl: "${HUDSON_URL}test/" + "${JOB_NAME}".tokenize('/')[0] + "/${BRANCH_NAME}"
 
+			}
+		}
+		stage('lisk-service') {
+			steps {
+				dir('lisk-service') {
+					checkout([$class: 'GitSCM',
+						  branches: [[name: "${params.LISK_SERVICE_VERSION}" ]],
+						  userRemoteConfigs: [[url: 'https://github.com/LiskHQ/lisk-service']]])
+					sh '''
+					make build-core
+					make build-gateway
+					make build-template
+					make build-tests
+					'''
+					dir('docker') {
+						sh '''
+						ENABLE_HTTP_API='http-version1,http-version1-compat,http-status,http-test' \
+						ENABLE_WS_API='rpc,rpc-v1,blockchain,rpc-test' \
+						make -f Makefile.jenkins up
+						'''
+					}
+				}
+			}
+			post {
+				dir('docker') {
+					sh 'make -f Makefile.jenkins mrproper'
+				}
 			}
 		}
 		stage('Run tests') {
