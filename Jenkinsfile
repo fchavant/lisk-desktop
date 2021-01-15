@@ -138,7 +138,7 @@ EOF
                                           export CYPRESS_coreUrl=http://127.0.0.1:$( docker-compose port lisk 4000 |cut -d ":" -f 2 )
                                           sleep 10
                                           cd -
-                                          npm run cypress:run -- --record --spec $FAILED_TESTS |tee cypress.log
+                                          #npm run cypress:run -- --record --spec $FAILED_TESTS |tee cypress.log
                                           ret=$?
 										fi
 										exit $ret
