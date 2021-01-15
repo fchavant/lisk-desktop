@@ -79,8 +79,10 @@ pipeline {
 				}
 			}
 			post {
-				dir('docker') {
-					sh 'make -f Makefile.jenkins mrproper'
+				always {
+					dir('lisk-service/docker') {
+						sh 'make -f Makefile.jenkins mrproper'
+					}
 				}
 			}
 		}
