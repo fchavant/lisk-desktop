@@ -5,7 +5,7 @@ def waitForHttp() {
 		waitUntil {
 			script {
 				dir('./docker') {
-					def api_available = sh script: "make -f ${Makefile} ready", returnStatus: true
+					def api_available = sh script: "make -f Makefile.jenkins ready", returnStatus: true
 					return (api_available == 0)
 				}
 			}
