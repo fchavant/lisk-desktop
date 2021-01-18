@@ -1,18 +1,5 @@
 @Library('lisk-jenkins') _
 
-def waitForHttp() {
-	timeout(1) {
-		waitUntil {
-			script {
-				dir('./docker') {
-					def api_available = sh script: "make -f Makefile.jenkins ready", returnStatus: true
-					return (api_available == 0)
-				}
-			}
-		}
-	}
-}
-
 properties([disableConcurrentBuilds(), pipelineTriggers([])])
 pipeline {
 	agent { node { label 'lisk-desktop' } }
@@ -117,20 +104,10 @@ pipeline {
 							make build-core
 							make build-gateway
 							make build-template
+							make build-tests
 							'''
-							dir('docker') {
-								sh '''
-								ENABLE_HTTP_API='http-version1,http-version1-compat,http-status,http-test' \
-								ENABLE_WS_API='rpc,rpc-v1,blockchain,rpc-test' \
-								LISK_CORE_HTTP=http://127.0.0.1:$( cat $WORKSPACE/.core_port ) \
-								LISK_CORE_WS=ws://127.0.0.1:$( cat $WORKSPACE/.core_port ) \
-								make -f Makefile.jenkins up
-								'''
-								waitForHttp()
-							}
 						}
-						withCredentials([string(credentialsId: 'lisk-hub-testnet-passphrase', variable: 'TESTNET_PASSPHRASE')]) {
-						withCredentials([string(credentialsId: 'lisk-hub-cypress-record-key', variable: 'CYPRESS_RECORD_KEY')]) {
+						withCredentials([string(credentialsId: 'lisk-hub-testnet-passphrase', variable: 'TESTNET_PASSPHRASE'), string(credentialsId: 'lisk-hub-cypress-record-key', variable: 'CYPRESS_RECORD_KEY')]) {
 							ansiColor('xterm') {
 								wrap([$class: 'Xvfb', parallelBuild: true, autoDisplayName: true]) {
 									nvm(getNodejsVersion()) {
@@ -156,9 +133,36 @@ services:
       - \\${ENV_LISK_WS_PORT}
 EOF
 
+										rm -rf $WORKSPACE/$BRANCH_NAME-service/
+										cp -rf $WORKSPACE/lisk-service/docker/ $WORKSPACE/$BRANCH_NAME-service/
+
 										ENV_LISK_VERSION="$LISK_CORE_IMAGE_VERSION" make coldstart
 										export CYPRESS_baseUrl=http://127.0.0.1:565$N/#/
 										export CYPRESS_coreUrl=http://127.0.0.1:$( docker-compose port lisk 4000 |cut -d ":" -f 2 )
+										cd -
+
+										cd $WORKSPACE/$BRANCH_NAME-service/
+										ENABLE_HTTP_API='http-version1,http-version1-compat,http-status,http-test' \
+										ENABLE_WS_API='rpc,rpc-v1,blockchain,rpc-test' \
+										LISK_CORE_HTTP=http://127.0.0.1:$( cat $WORKSPACE/.core_port ) \
+										LISK_CORE_WS=ws://127.0.0.1:$( cat $WORKSPACE/.core_port ) \
+										make -f Makefile.jenkins up
+										ready=1
+										retries=0
+										set +e
+										while [ $ready -ne 0 ]; do
+										  make -f Makefile.jenkins ready
+										  ready=$?
+										  sleep 10
+										  let retries++
+										  if [ $retries = 6 ]; then
+										    break
+										  fi
+										done
+										set -e
+										if [ $retries -ge 6 ]; then
+										  exit 1
+										fi
 										cd -
 
 										npm run serve -- $WORKSPACE/app/build -p 565$N -a 127.0.0.1 &>server.log &
@@ -182,7 +186,6 @@ EOF
 									}
 								}
 							}
-						}
 						}
 					},
 					"percy": {
