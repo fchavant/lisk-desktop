@@ -188,32 +188,8 @@ EOF
 		}
 	}
 	post {
-		always {
-			cobertura autoUpdateHealth: false,
-				  autoUpdateStability: false,
-				  coberturaReportFile: 'coverage/jest/cobertura-coverage.xml',
-				  conditionalCoverageTargets: '70, 0, 0',
-				  failUnhealthy: false,
-				  failUnstable: false,
-				  fileCoverageTargets: '100, 0, 0',
-				  lineCoverageTargets: '80, 0, 0',
-				  maxNumberOfBuilds: 0,
-				  methodCoverageTargets: '80, 0, 0',
-				  onlyStable: false,
-				  sourceEncoding: 'ASCII'
-			junit 'coverage/jest/junit.xml'
-		}
-		fixed {
-			script {
-				build_info = getBuildInfo()
-				liskSlackSend('good', "Recovery: build ${build_info} was successful.")
-			}
-		}
 		failure {
-			script {
-				build_info = getBuildInfo()
-				liskSlackSend('danger', "Build ${build_info} failed (<${env.BUILD_URL}/console|console>, <${env.BUILD_URL}/changes|changes>)")
-			}
+			sh 'cd $WORKSPACE/lisk-service/docker && make -j Makefile.jenkins logs || true ) || true'
 		}
 		cleanup {
 			ansiColor('xterm') {
