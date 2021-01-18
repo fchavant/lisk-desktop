@@ -137,8 +137,7 @@ EOF
 										cp -rf $WORKSPACE/lisk-service/docker/ $WORKSPACE/$BRANCH_NAME-service/
 
 										ENV_LISK_VERSION="$LISK_CORE_IMAGE_VERSION" make coldstart
-										export CYPRESS_baseUrl=http://127.0.0.1:565$N/#/
-										export CYPRESS_coreUrl=http://127.0.0.1:$( docker-compose port lisk 4000 |cut -d ":" -f 2 )
+										docker-compose port lisk 4000 |cut -d ":" -f 2 >$WORKSPACE/.core_port
 										cd -
 
 										cd $WORKSPACE/$BRANCH_NAME-service/
@@ -175,16 +174,19 @@ EOF
 										cd -
 
 										npm run serve -- $WORKSPACE/app/build -p 565$N -a 127.0.0.1 &>server.log &
+
+										export CYPRESS_coreUrl=http://127.0.0.1:$( cat $WORKSPACE/.core_port )
+										export CYPRESS_baseUrl=http://127.0.0.1:565$N/#/
 										set +e
 										set -o pipefail
 										npm run cypress:run |tee cypress.log
 										ret=$?
+
+										# this is to save on cypress credits
 										if [ $ret -ne 0 ]; then
 										  FAILED_TESTS="$( awk '/Spec/{f=1}f' cypress.log |grep --only-matching '✖ .*.feature' |awk '{ print "test/cypress/features/"$2 }' |xargs| tr -s ' ' ',' )"
 										  cd $WORKSPACE/$BRANCH_NAME
 										  make coldstart
-										  docker-compose port lisk 4000 |cut -d ":" -f 2 >$WORKSPACE/.core_port
-										  export CYPRESS_coreUrl=http://127.0.0.1:$( cat $WORKSPACE/.core_port )
 										  sleep 10
 										  cd -
 										  npm run cypress:run -- --record --spec $FAILED_TESTS |tee cypress.log
@@ -248,7 +250,8 @@ EOF
 			ansiColor('xterm') {
 				sh '( cd $WORKSPACE/$BRANCH_NAME-service/docker && make -f Makefile.jenkins logs || true ) || true'
 				sh '( cd $WORKSPACE/$BRANCH_NAME-service/docker && make -f Makefile.jenkins mrproper || tue ) || true'
-				sh '( cd $WORKSPACE/$BRANCH_NAME && docker-compose logs && make mrproper || true ) || true'
+				sh '( cd $WORKSPACE/$BRANCH_NAME && docker-compose logs || true ) || true'
+				sh '( cd $WORKSPACE/$BRANCH_NAME && make mrproper || true ) || true'
 			}
 			cleanWs()
 		}
