@@ -188,11 +188,9 @@ EOF
 		}
 	}
 	post {
-		failure {
-			sh 'cd $WORKSPACE/lisk-service/docker && make -j Makefile.jenkins logs || true ) || true'
-		}
 		cleanup {
 			ansiColor('xterm') {
+				sh '( cd $WORKSPACE/lisk-service/docker && make -f Makefile.jenkins logs || true ) || true'
 				sh '( cd $WORKSPACE/lisk-service/docker && make -f Makefile.jenkins mrproper || tue ) || true'
 				sh '( cd $WORKSPACE/$BRANCH_NAME && docker-compose logs && make mrproper || true ) || true'
 			}
