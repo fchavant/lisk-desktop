@@ -248,8 +248,8 @@ EOF
 		}
 		cleanup {
 			ansiColor('xterm') {
-				sh '( cd $WORKSPACE/$BRANCH_NAME-service/docker && make -f Makefile.jenkins logs || true ) || true'
-				sh '( cd $WORKSPACE/$BRANCH_NAME-service/docker && make -f Makefile.jenkins mrproper || tue ) || true'
+				sh '( cd $WORKSPACE/$BRANCH_NAME-service && make -f Makefile.jenkins logs || true ) || true'
+				sh '( cd $WORKSPACE/$BRANCH_NAME-service && make -f Makefile.jenkins mrproper || tue ) || true'
 				sh '( cd $WORKSPACE/$BRANCH_NAME && docker-compose logs || true ) || true'
 				sh '( cd $WORKSPACE/$BRANCH_NAME && make mrproper || true ) || true'
 			}
