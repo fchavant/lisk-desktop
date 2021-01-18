@@ -117,7 +117,6 @@ pipeline {
 							make build-core
 							make build-gateway
 							make build-template
-							make build-tests
 							'''
 							dir('docker') {
 								sh '''
