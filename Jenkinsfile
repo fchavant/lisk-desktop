@@ -146,6 +146,7 @@ EOF
 										ENABLE_WS_API='rpc,rpc-v1,blockchain,rpc-test' \
 										LISK_CORE_HTTP=http://127.0.0.1:$( cat $WORKSPACE/.core_port ) \
 										LISK_CORE_WS=ws://127.0.0.1:$( cat $WORKSPACE/.core_port ) \
+										# TODO: use random port when the tests support it
 										cat <<EOF >docker-compose.override.yml
 version: "3"
 services:
@@ -245,8 +246,8 @@ EOF
 		}
 		cleanup {
 			ansiColor('xterm') {
-				sh '( cd $WORKSPACE/lisk-service/docker && make -f Makefile.jenkins logs || true ) || true'
-				sh '( cd $WORKSPACE/lisk-service/docker && make -f Makefile.jenkins mrproper || tue ) || true'
+				sh '( cd $WORKSPACE/$BRANCH_NAME-service/docker && make -f Makefile.jenkins logs || true ) || true'
+				sh '( cd $WORKSPACE/$BRANCH_NAME-service/docker && make -f Makefile.jenkins mrproper || tue ) || true'
 				sh '( cd $WORKSPACE/$BRANCH_NAME && docker-compose logs && make mrproper || true ) || true'
 			}
 			cleanWs()
