@@ -180,8 +180,9 @@ EOF
 
 										npm run serve -- $WORKSPACE/app/build -p 565$N -a 127.0.0.1 &>server.log &
 
-										export CYPRESS_coreUrl=http://127.0.0.1:$( cat $WORKSPACE/.core_port )
 										export CYPRESS_baseUrl=http://127.0.0.1:565$N/#/
+										export CYPRESS_coreUrl=http://127.0.0.1:$( cat $WORKSPACE/.core_port )
+										export CYPRESS_serviceUrl=http://127.0.0.1:9901/
 										set +e
 										set -o pipefail
 										npm run cypress:run |tee cypress.log
