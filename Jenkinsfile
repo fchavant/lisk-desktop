@@ -150,11 +150,15 @@ services:
     ports:
       - 127.0.0.1:9901:9901
 EOF
+
+										cat <<EOF >custom.env
+LISK_CORE_HTTP=http://127.0.0.1:$( cat $WORKSPACE/.core_port )
+LISK_CORE_WS=ws://127.0.0.1:$( cat $WORKSPACE/.core_port )
+EOF
 										sed -i '/compose := docker-compose/a\\\t-f docker-compose.override.yml \\\\' Makefile.jenkins
+										sed -i 's/docker-compose.testnet.yml/docker-compose.custom.yml/' Makefile.jenkins
 										ENABLE_HTTP_API='http-version1,http-version1-compat,http-status,http-test' \
 										ENABLE_WS_API='rpc,rpc-v1,blockchain,rpc-test' \
-										LISK_CORE_HTTP=http://127.0.0.1:$( cat $WORKSPACE/.core_port ) \
-										LISK_CORE_WS=ws://127.0.0.1:$( cat $WORKSPACE/.core_port ) \
 										make -f Makefile.jenkins up
 										ready=1
 										retries=0
