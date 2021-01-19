@@ -154,6 +154,7 @@ services:
     ports:
       - 127.0.0.1:9901:9901
 EOF
+										sed -i '/compose := docker-compose/a\\\t-f docker-compose.override.yml \\\\' Makefile.jenkins
 										make -f Makefile.jenkins up
 										ready=1
 										retries=0
