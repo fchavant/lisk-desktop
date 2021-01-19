@@ -152,8 +152,8 @@ services:
 EOF
 
 										cat <<EOF >custom.env
-LISK_CORE_HTTP=http://127.0.0.1:$( cat $WORKSPACE/.core_port )
-LISK_CORE_WS=ws://127.0.0.1:$( cat $WORKSPACE/.core_port )
+LISK_CORE_HTTP=http://10.127.0.1:$( cat $WORKSPACE/.core_port )
+LISK_CORE_WS=ws://10.127.0.1:$( cat $WORKSPACE/.core_port )
 EOF
 										sed -i '/compose := docker-compose/a\\\t-f docker-compose.override.yml \\\\' Makefile.jenkins
 										sed -i 's/docker-compose.testnet.yml/docker-compose.custom.yml/' Makefile.jenkins
