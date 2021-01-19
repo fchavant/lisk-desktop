@@ -164,7 +164,7 @@ EOF
 										retries=0
 										set +e
 										while [ $ready -ne 0 ]; do
-										  make -f Makefile.jenkins ready
+										  curl --fail --verbose http://127.0.0.1:9901/api/v1/blocks
 										  ready=$?
 										  sleep 10
 										  let retries++
